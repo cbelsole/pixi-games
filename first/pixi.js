@@ -1,0 +1,1 @@
+../../pixi.js/bin/pixi.js

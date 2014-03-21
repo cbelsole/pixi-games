@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>pixi.js example 1</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #000000;
+      }
+    </style>
+    <script src="pixi.js"></script>
+</head>
+<body>
+  <script>
+    var speed = 5;
+    var currDirection = 'x';
+    var currSpeed = 0;
+    // create a new instance of a pixi stage
+    var stage = new PIXI.Stage(0x66FF99);
+
+    // create a renderer instance
+    var renderer = PIXI.autoDetectRenderer(800, 600);
+
+    // add the renderer view element to the DOM
+    document.body.appendChild(renderer.view);
+
+    requestAnimFrame( animate );
+
+    // Create a texture from an image path
+    var texture = PIXI.Texture.fromImage('bunny.png');
+    //create a new Sprite using the texture
+    var bunny = new PIXI.Sprite(texture);
+
+    var food = new PIXI.Sprite(texture);
+
+    // center the sprite anchor point
+    bunny.anchor.x = 0.5;
+    bunny.anchor.y = 0.5;
+
+    food.anchor.x = 0.5;
+    food.anchor.y = 0.5;
+
+    //move the sprite to the center of the screen
+    bunny.position.x = 400;
+    bunny.position.y = 300;
+
+    food.position.x = 200;
+    food.position.y = 200;
+
+    stage.addChild(food);
+    stage.addChild(bunny);
+
+
+    function animate() {
+      requestAnimFrame(animate);
+      check_bounds();
+      collision.checkCollision(bunny);
+
+      bunny.position[currDirection] = bunny.position[currDirection] + currSpeed
+
+      // render the stage
+      renderer.render(stage);
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if(event.keyCode == 37) {
+            console.log('Left was pressed');
+            currDirection = 'x';
+            currSpeed = -speed;
+        } else if(event.keyCode == 38) {
+            console.log('Up was pressed');
+            currDirection = 'y';
+            currSpeed = -speed;
+        } else if(event.keyCode == 39) {
+            console.log('Right was pressed');
+            currDirection = 'x';
+            currSpeed = speed;
+        } else if(event.keyCode == 40) {
+            console.log('Down was pressed');
+            currDirection = 'y';
+            currSpeed = speed;
+        }
+    });
+
+    function check_bounds() {
+        if((currDirection == 'x' && (collision.right_side(bunny) + currSpeed >= 800 || collision.left_side(bunny) + currSpeed <= 0)) ||
+            (currDirection == 'y' && (collision.bottom(bunny) + currSpeed >= 600 || collision.top(bunny) + currSpeed <= 0))) {
+                currSpeed = 0;
+        }
+    }
+
+    var collision = {
+        right_side: function (entity) {
+            return entity.position.x + Math.ceil(entity.width / 2);
+        },
+
+        left_side: function (entity) {
+            return entity.position.x - Math.ceil(entity.width / 2);
+        },
+
+        top: function (entity) {
+            return entity.position.y - Math.ceil(entity.height / 2);
+        },
+
+        bottom: function (entity) {
+            return entity.position.y + Math.ceil(entity.height / 2);
+        },
+
+        betweenLeftAndRight: function (x, entity) {
+            return x >= collision.left_side(entity) && x <= collision.right_side(entity);
+        },
+
+        betweenTopAndBottom: function(y, entity) {
+            return y >= collision.top(entity) && y <= collision.bottom(entity);
+        },
+
+        checkCollision: function (entity) {
+            stage.children.forEach(function(child) {
+                if (entity != child) {
+                    if((collision.betweenTopAndBottom(collision.top(entity), child) ||
+                        collision.betweenTopAndBottom(collision.bottom(entity), child)) &&
+                       (collision.betweenLeftAndRight(collision.left_side(entity), child) ||
+                        collision.betweenLeftAndRight(collision.right_side(entity), child))) {
+                        stage.removeChild(child);
+                    }
+                }
+            });
+        }
+    };
+  </script>
+</body>
+</html>
